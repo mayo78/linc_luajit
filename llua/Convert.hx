@@ -1,5 +1,6 @@
 package llua;
 
+// modified to add functions, any lua function must be Array<Dynamic>->Dynamic
 
 import llua.State;
 import llua.Lua;
@@ -86,13 +87,23 @@ class Convert {
 				ret = Lua.tostring(l, v);
 			case Lua.LUA_TTABLE:
 				ret = toHaxeObj(l, v);
-			case Lua.LUA_TFUNCTION:
+			case Lua.LUA_TFUNCTION: // arrays are nice
 				var ref = LuaL.ref(l, Lua.LUA_REGISTRYINDEX);
-				ret = function():Void {
+				ret = Reflect.makeVarArgs(function(inp:Array<Dynamic>):Dynamic {
 					Lua.rawgeti(l, Lua.LUA_REGISTRYINDEX, ref);
-					if (Lua.isfunction(l, -1)) Lua.call(l, 0, 0);
+					if (Lua.isfunction(l, -1)) {
+						for (i in inp) {
+							if (!toLua(l, i))
+								Lua.pushnil(l);
+						}
+						Lua.call(l, inp.length, 1);
+						final out = fromLua(l, -1);
+						Lua.pop(l, 1);
+						return out;
+					}
 					LuaL.unref(l, Lua.LUA_REGISTRYINDEX, ref);
-				}
+					return null;
+				});
 			// case Lua.LUA_TUSERDATA:
 			// 	ret = LuaL.ref(l, Lua.LUA_REGISTRYINDEX);
 			// 	trace("userdata\n");
