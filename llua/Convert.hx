@@ -72,7 +72,7 @@ class Convert {
 	/**
 	 * From Lua
 	 */
-	public static inline function fromLua(l:State, v:Int):Any {
+	public static function fromLua(l:State, v:Int):Any {
 
 		var ret:Any = null;
 		var vtype:Int = Lua.type(l, v);
@@ -115,7 +115,7 @@ class Convert {
 			// 	trace("thread\n");
 			default:
 				ret = null;
-				trace("return value not supported\nvalue: "+v+"\ntype: "+vtype);
+				trace("return value not supported\nvalue: " + v + "\ntype: " + vtype);
 		}
 
 		return ret;

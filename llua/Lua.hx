@@ -587,10 +587,12 @@ class Lua_helper {
 
 		if(ret != null){
 			Convert.toLua(l, ret);
+			return 1;
 		}
 
+		
 		/* return the number of results */
-		return 1;
+		return 0;
 
 	} //callback_handler
 
