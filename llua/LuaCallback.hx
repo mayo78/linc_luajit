@@ -16,12 +16,15 @@ class LuaCallback {
     }
 
     /** Runs this Lua function once, with the given arguments. */
-    public function call(args:Array<Dynamic> = null) {
+    public function call(args:Array<Dynamic> = null):Null<Dynamic> {
         Lua.rawgeti(l, Lua.LUA_REGISTRYINDEX, this.ref);
         if (Lua.isfunction(l, -1)) {
             if (args == null) args = [];
-            for (arg in args) Convert.toLua(l, arg);
-            var status:Int = Lua.pcall(l, args.length, 0, 0);
+            for (arg in args) {
+				if (!Convert.toLua(l, arg))
+					Lua.pushnil(l);
+			}
+            var status:Int = Lua.pcall(l, args.length, 1, 0);
             if (status != Lua.LUA_OK) {
                 var err:String = Lua.tostring(l, -1);
                 Lua.pop(l, 1);
@@ -35,8 +38,14 @@ class LuaCallback {
                     }
                 }
                 trace("Error on callback: " + err);
-            }
+				return null;
+            } else {
+				final out = Convert.fromLua(l, -1);
+				Lua.pop(l, 1);
+				return out;
+			}
         }
+		return null;
     }
 
     /**
